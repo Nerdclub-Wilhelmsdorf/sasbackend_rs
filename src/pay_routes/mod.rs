@@ -81,15 +81,15 @@ pub async fn process_payment(
     if !verify_pin(&sender.pin, &payload.pin) {
         return Ok(Err(PaymentError::IncorrectPin));
     }
-    if !sender.has_sufficient_funds(&payload.amount).await {
-        return Ok(Err(PaymentError::InsufficientFunds));
-    }
     let tax = Decimal::from_str("1.1").unwrap();
     let amount = Decimal::from_str(&payload.amount).unwrap();
     let tax_amount = amount * tax;
     let tax_amount_bank: Decimal = tax_amount.clone() - amount;
     let tax_amount = tax_amount.to_string();
     let tax_amount_bank = tax_amount_bank.to_string();
+    if !sender.has_sufficient_funds(&tax_amount).await {
+        return Ok(Err(PaymentError::InsufficientFunds))
+    }
     match sender
         .update_balance(&tax_amount, TransferType::Subtract)
         .await
