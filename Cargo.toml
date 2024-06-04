@@ -1,0 +1,10 @@
+[package]
+name = "sasbackend_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+salvo = "0.68.0"
+tokio = "1.38.0"
+tokyo = "1.0.0"
+tracing-subscriber = "0.3.18"
