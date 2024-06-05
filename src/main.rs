@@ -10,7 +10,7 @@ use surrealdb::{
 const DBURL: &str = "127.0.0.1:8000";
 const DBUSER: &str = "guffe";
 const DBPASS: &str = "IE76qzUk0t78JGhTz";
-const TOKEN: &str = "Bearer test";
+const TOKEN: &str = "Bearer W_97xyk8G]]w";
 const TAX_FACTOR: &str = "1.1";
 static DB: once_cell::sync::Lazy<Surreal<Client>> = once_cell::sync::Lazy::new(Surreal::init);
 mod balance_check;
@@ -26,8 +26,8 @@ async fn hello() -> &'static str {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt().init();
-    let cert = std::fs::read("../fullchain.pem").unwrap();
-    let key = std::fs::read("../privkey.pem").unwrap();
+    let cert = std::fs::read("fullchain.pem").unwrap();
+    let key = std::fs::read("privkey.pem").unwrap();
     db_connect().await;
     let cors = Cors::new()
         .allow_origin("*")
