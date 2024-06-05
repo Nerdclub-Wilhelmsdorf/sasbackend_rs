@@ -16,3 +16,7 @@ surrealdb = "1.5.1"
 tokio = "1.38.0"
 tokyo = "1.0.0"
 tracing-subscriber = "0.3.18"
+
+
+[profile.release]
+opt-level = 3

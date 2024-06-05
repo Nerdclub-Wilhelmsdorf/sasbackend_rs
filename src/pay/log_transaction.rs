@@ -51,27 +51,27 @@ pub async fn log_transaction(
     let mut sender_transactions: Vec<String> = sender
         .transactions
         .clone()
-        .split(',')
+        .split("###")
         .map(|s| s.to_string())
         .collect();
     let mut receiver_transactions: Vec<String> = receiver
         .transactions
         .clone()
-        .split(',')
+        .split("###")
         .map(|s| s.to_string())
         .collect();
     let mut bank_transactions: Vec<String> = bank
         .transactions
         .clone()
-        .split(',')
+        .split("###")
         .map(|s| s.to_string())
         .collect();
     sender_transactions.push(transaction_sender.clone());
     receiver_transactions.push(transaction_reciever.clone());
     bank_transactions.push(transaction_bank.clone());
-    let sender_transactions: String = sender_transactions.join(",");
-    let receiver_transactions: String = receiver_transactions.join(",");
-    let bank_transactions: String = bank_transactions.join(",");
+    let sender_transactions: String = sender_transactions.join("###");
+    let receiver_transactions: String = receiver_transactions.join("###");
+    let bank_transactions: String = bank_transactions.join("###");
     sender
         .update_value("transactions", &sender_transactions)
         .await?;

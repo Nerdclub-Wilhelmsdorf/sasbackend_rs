@@ -1,6 +1,7 @@
 use salvo::conn::rustls::{Keycert, RustlsConfig};
-use salvo::cors::Cors;
-use salvo::http::Method;
+use salvo::cors::{self, Cors};
+use salvo::http::headers::Authorization;
+use salvo::http::{headers, Method};
 use salvo::prelude::*;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
@@ -26,14 +27,14 @@ async fn hello() -> &'static str {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt().init();
-    let cert = std::fs::read("fullchain.pem").unwrap();
-    let key = std::fs::read("privkey.pem").unwrap();
+    let cert = include_bytes!("../fullchain.pem").to_vec();
+    let key = include_bytes!("../privkey.pem").to_vec();
     db_connect().await;
     let cors = Cors::new()
-        .allow_origin("*")
+        .allow_origin(cors::Any)
         .allow_methods(vec![Method::GET, Method::POST, Method::DELETE])
+        .allow_headers(vec!["authorization", "content-type"])
         .into_handler();
-
     let root_route = Router::new().get(hello);
     let pay_route = Router::new().path("/pay").post(pay::pay);
     let balance_route = Router::new()
@@ -54,8 +55,8 @@ async fn main() {
         .hoop(Logger::new())
         .hoop(authorization);
     let config = RustlsConfig::new(Keycert::new().cert(cert.as_slice()).key(key.as_slice()));
-    let listener = TcpListener::new(("127.0.0.1", 8443)).rustls(config.clone());
-    let acceptor = QuinnListener::new(config, ("127.0.0.1", 8443))
+    let listener = TcpListener::new(("saswdorf.de", 8443)).rustls(config.clone());
+    let acceptor = QuinnListener::new(config, ("saswdorf.de", 8443))
         .join(listener)
         .bind()
         .await;
@@ -76,22 +77,24 @@ async fn db_connect() {
 
 #[handler]
 async fn authorization(req: &mut Request, res: &mut Response) {
-    let auth = match req.headers().get("Authorization") {
-        Some(auth) => auth,
-        None => {
+    if req.method() != Method::OPTIONS {
+        let auth = match req.headers().get("Authorization") {
+            Some(auth) => auth,
+            None => {
+                res.status_code(StatusCode::UNAUTHORIZED);
+                return res.render("No authorization header found");
+            }
+        };
+        let auth = match auth.to_str() {
+            Ok(auth) => auth,
+            Err(_) => {
+                res.status_code(StatusCode::UNAUTHORIZED);
+                return res.render("Failed to parse the authorization header");
+            }
+        };
+        if auth != TOKEN {
             res.status_code(StatusCode::UNAUTHORIZED);
-            return res.render("No authorization header found");
+            return res.render("Invalid token");
         }
-    };
-    let auth = match auth.to_str() {
-        Ok(auth) => auth,
-        Err(_) => {
-            res.status_code(StatusCode::UNAUTHORIZED);
-            return res.render("Failed to parse the authorization header");
-        }
-    };
-    if auth != TOKEN {
-        res.status_code(StatusCode::UNAUTHORIZED);
-        return res.render("Invalid token");
     }
 }
