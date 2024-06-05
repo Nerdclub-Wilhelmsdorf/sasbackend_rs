@@ -2,7 +2,6 @@ use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::Cors;
 use salvo::http::Method;
 use salvo::prelude::*;
-use surrealdb::opt::auth;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
     opt::auth::Root,

@@ -1,15 +1,10 @@
-use core::fmt;
 
-use crate::{DB, DBPASS, DBURL, DBUSER};
+use crate::{DB};
 use rust_decimal::prelude::*;
 use rust_decimal_macros::dec;
 use serde::Deserialize;
-use surrealdb::engine::remote::ws::{Client, Ws};
-use surrealdb::method::Patch;
-use surrealdb::opt::auth::Root;
 use surrealdb::opt::PatchOp;
 use surrealdb::sql::Id;
-use surrealdb::Surreal;
 #[derive(Deserialize)]
 pub struct AccountID {
     pub id: Id,
