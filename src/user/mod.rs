@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{DBPASS, DBURL, DBUSER};
+use crate::{DB, DBPASS, DBURL, DBUSER};
 use rust_decimal::prelude::*;
 use rust_decimal_macros::dec;
 use serde::Deserialize;
@@ -10,12 +10,12 @@ use surrealdb::opt::auth::Root;
 use surrealdb::opt::PatchOp;
 use surrealdb::sql::Id;
 use surrealdb::Surreal;
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct AccountID {
     pub id: Id,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct DBUser {
     pub id: AccountID,
     pub name: String,
@@ -26,13 +26,7 @@ pub struct DBUser {
 
 impl DBUser {
     pub async fn fetch_user(id: &String) -> Result<Option<DBUser>, surrealdb::Error> {
-        let db = get_connection().await;
-        let db = match db {
-            Ok(db) => db,
-            Err(e) => return Err(e),
-        };
-
-        let user: Option<DBUser> = db.select(("user", id)).await?;
+        let user: Option<DBUser> = DB.select(("user", id)).await?;
         Ok(user)
     }
     pub async fn has_sufficient_funds(&self, amount: &str) -> bool {
@@ -53,13 +47,8 @@ impl DBUser {
         key: &str,
         value: &str,
     ) -> Result<Option<DBUser>, surrealdb::Error> {
-        let db = get_connection().await;
-        let db = match db {
-            Ok(db) => db,
-            Err(e) => return Err(e),
-        };
         let id = self.id.id.clone(); // Clone the id value
-        let updated_user: Option<DBUser> = db
+        let updated_user: Option<DBUser> = DB
             .update(("user", id)) // Use the cloned id value
             .patch(PatchOp::replace(&format!("/{}", key), value))
             .await?;
@@ -71,13 +60,8 @@ impl DBUser {
         amount: &str,
         transfer_type: TransferType,
     ) -> Result<Option<DBUser>, surrealdb::Error> {
-        let db = get_connection().await;
-        let db = match db {
-            Ok(db) => db,
-            Err(e) => return Err(e),
-        };
         let id = self.id.id.clone(); // Clone the id value
-        let current_user_state: Option<DBUser> = db.select(("user", id.clone())).await?;
+        let current_user_state: Option<DBUser> = DB.select(("user", id.clone())).await?;
         let current_user_state = match current_user_state {
             Some(current_user_state) => current_user_state,
             None => return Ok(None),
@@ -100,7 +84,7 @@ impl DBUser {
             return Ok(None);
         }
         let new_balance = new_balance.to_string();
-        let updated_user: Option<DBUser> = db
+        let updated_user: Option<DBUser> = DB
             .update(("user", id))
             .patch(PatchOp::replace(&format!("/{}", "balance"), new_balance))
             .await?;
@@ -108,21 +92,12 @@ impl DBUser {
     }
 }
 
-async fn get_connection() -> surrealdb::Result<Surreal<Client>> {
-    // Connect to the server
-    let db = Surreal::new::<Ws>(DBURL).await?;
-
-    // Signin as a namespace, database, or root user
-    db.signin(Root {
-        username: DBUSER,
-        password: DBPASS,
-    })
-    .await?;
-    db.use_ns("user").use_db("user").await?;
-    Ok(db)
-}
-
 pub enum TransferType {
     Add,
     Subtract,
+}
+
+pub fn verify_pin(database_pin: &str, input_pin: &str) -> bool {
+    bcrypt::verify(input_pin, database_pin).unwrap()
+    //TODO
 }

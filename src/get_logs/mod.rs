@@ -1,0 +1,47 @@
+mod log_request;
+
+use bcrypt::verify;
+use salvo::prelude::*;
+
+use crate::user::DBUser;
+
+#[handler]
+pub async fn get_logs(req: &mut Request, res: &mut Response) {
+    let payload_result = req.parse_json::<log_request::GetLogs>().await;
+    let payload = match payload_result {
+        Ok(payload) => payload,
+        Err(_) => {
+            res.status_code(StatusCode::CREATED);
+            return res.render("Failed to parse the request, are the values set according to the API documentation?");
+        }
+    };
+    let payload = match payload.validate() {
+        Some(e) => {
+            res.status_code(StatusCode::CREATED);
+            return res.render(e);
+        }
+        None => payload,
+    };
+    let user = DBUser::fetch_user(&payload.acc).await;
+
+    match user {
+        Ok(user) => match user {
+            Some(user) => {
+                if !verify(&payload.pin, &user.pin).unwrap() {
+                    res.status_code(StatusCode::CREATED);
+                    return res.render("wrong pin");
+                }
+                res.status_code(StatusCode::OK);
+                res.render(user.transactions);
+            }
+            None => {
+                res.status_code(StatusCode::CREATED);
+                res.render("User not found (no row)");
+            }
+        },
+        Err(_) => {
+            res.status_code(StatusCode::CREATED);
+            res.render("Failed to connect to the database");
+        }
+    }
+}
