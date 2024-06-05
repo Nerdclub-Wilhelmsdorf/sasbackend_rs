@@ -2,6 +2,7 @@ use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::Cors;
 use salvo::http::Method;
 use salvo::prelude::*;
+use surrealdb::opt::auth;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
     opt::auth::Root,
@@ -26,8 +27,8 @@ async fn hello() -> &'static str {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt().init();
-    let cert = include_bytes!("fullchain.pem").to_vec();
-    let key = include_bytes!("privkey.pem").to_vec();
+    let cert = std::fs::read("../fullchain.pem").unwrap();
+    let key = std::fs::read("../privkey.pem").unwrap();
     db_connect().await;
     let cors = Cors::new()
         .allow_origin("*")
@@ -49,7 +50,10 @@ async fn main() {
         .push(log_route)
         .push(verify_route)
         .push(balance_route);
-    let service = Service::new(router).hoop(cors).hoop(Logger::new());
+    let service = Service::new(router)
+        .hoop(cors)
+        .hoop(Logger::new())
+        .hoop(authorization);
     let config = RustlsConfig::new(Keycert::new().cert(cert.as_slice()).key(key.as_slice()));
     let listener = TcpListener::new(("127.0.0.1", 8443)).rustls(config.clone());
     let acceptor = QuinnListener::new(config, ("127.0.0.1", 8443))
