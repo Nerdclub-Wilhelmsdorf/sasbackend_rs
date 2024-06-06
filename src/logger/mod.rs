@@ -1,8 +1,10 @@
+use tokio::fs::OpenOptions;
+
 pub enum Actions{
-    Transaction(from, to, amount),
-    Verification(user),
-    BalanceCheck(user),
-    GetLogs(user)
+    Transaction{from: String, to: String, amount: f64},
+    Verification{user: String},
+    BalanceCheck{user: String}, 
+    GetLogs{user: String}
 }
 
 
@@ -10,7 +12,7 @@ pub enum Actions{
 
 fn write_to_file(action: Actions) {
     match action {
-        Actions::Transaction(from, to, amount) => {
+        Actions::Transaction{from, to, amount} => {
             let mut file = OpenOptions::new()
                 .write(true)
                 .append(true)
