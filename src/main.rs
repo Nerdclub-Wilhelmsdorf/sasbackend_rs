@@ -1,7 +1,6 @@
 use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::{self, Cors};
-use salvo::http::headers::Authorization;
-use salvo::http::{headers, Method};
+use salvo::http::Method;
 use salvo::prelude::*;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
@@ -19,6 +18,7 @@ mod get_logs;
 mod pay;
 mod user;
 mod verify_account;
+mod logger;
 #[handler]
 async fn hello() -> &'static str {
     "0"
@@ -27,8 +27,8 @@ async fn hello() -> &'static str {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt().init();
-    let cert = include_bytes!("../fullchain.pem").to_vec();
-    let key = include_bytes!("../privkey.pem").to_vec();
+    let cert = tokio::fs::read("../fullchain.pem").await.unwrap();
+    let key = tokio::fs::read("../privkey.pem").await.unwrap();
     db_connect().await;
     let cors = Cors::new()
         .allow_origin(cors::Any)

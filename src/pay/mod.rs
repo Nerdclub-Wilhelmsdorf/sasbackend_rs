@@ -3,6 +3,8 @@ use salvo::prelude::*;
 mod log_transaction;
 mod payment_errors;
 mod process_payment;
+use crate::logger::log;
+
 use self::process_payment::process_payment;
 
 //desirialize the request   DONE
