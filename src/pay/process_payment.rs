@@ -39,7 +39,7 @@ impl PaymentRequest {
 }
 
 pub async fn process_payment(
-    payload: &PaymentRequest,
+    payload: PaymentRequest,
 ) -> Result<Result<String, PaymentError>, surrealdb::Error> {
     let sender = DBUser::fetch_user(&payload.from).await?;
     let receiver = DBUser::fetch_user(&payload.to).await?;

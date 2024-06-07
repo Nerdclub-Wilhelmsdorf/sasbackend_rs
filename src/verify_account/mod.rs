@@ -3,7 +3,7 @@ mod verify_request;
 use bcrypt::verify;
 use salvo::prelude::*;
 
-use crate::{logger, user::DBUser};
+use crate::user::DBUser;
 
 #[handler]
 pub async fn verify_account(req: &mut Request, res: &mut Response) {
@@ -28,26 +28,11 @@ pub async fn verify_account(req: &mut Request, res: &mut Response) {
         Ok(user) => match user {
             Some(user) => {
                 if !verify(&payload.pin, &user.pin).unwrap() {
-                    logger::log(
-                        logger::Actions::Verification {
-                            user: &payload.name,
-                        },
-                        logger::Return::Failed,
-                    )
-                    .await;
                     res.status_code(StatusCode::CREATED);
                     return res.render("failed to verify account");
                 }
                 res.status_code(StatusCode::OK);
                 res.render("account verified");
-                logger::log(
-                    logger::Actions::Verification {
-                        user: &payload.name,
-                    },
-                    logger::Return::Success,
-                )
-                .await;
-                return;
             }
             None => {
                 res.status_code(StatusCode::CREATED);
@@ -59,11 +44,4 @@ pub async fn verify_account(req: &mut Request, res: &mut Response) {
             res.render("Failed to connect to the database: error verifying account");
         }
     }
-    logger::log(
-        logger::Actions::Verification {
-            user: &payload.name,
-        },
-        logger::Return::Failed,
-    )
-    .await;
 }

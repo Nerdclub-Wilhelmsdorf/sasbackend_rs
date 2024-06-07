@@ -3,7 +3,7 @@ mod log_request;
 use bcrypt::verify;
 use salvo::prelude::*;
 
-use crate::{logger, user::DBUser};
+use crate::user::DBUser;
 
 #[handler]
 pub async fn get_logs(req: &mut Request, res: &mut Response) {
@@ -29,21 +29,10 @@ pub async fn get_logs(req: &mut Request, res: &mut Response) {
             Some(user) => {
                 if !verify(&payload.pin, &user.pin).unwrap() {
                     res.status_code(StatusCode::CREATED);
-                    logger::log(
-                        logger::Actions::GetLogs { user: &payload.acc },
-                        logger::Return::Failed,
-                    )
-                    .await;
                     return res.render("wrong pin");
                 }
                 res.status_code(StatusCode::OK);
                 res.render(user.transactions);
-                logger::log(
-                    logger::Actions::GetLogs { user: &payload.acc },
-                    logger::Return::Success,
-                )
-                .await;
-                return;
             }
             None => {
                 res.status_code(StatusCode::CREATED);
@@ -55,9 +44,4 @@ pub async fn get_logs(req: &mut Request, res: &mut Response) {
             res.render("Failed to connect to the database");
         }
     }
-    logger::log(
-        logger::Actions::GetLogs { user: &payload.acc },
-        logger::Return::Failed,
-    )
-    .await;
 }
