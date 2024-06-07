@@ -2,7 +2,10 @@ mod balance_request;
 
 use salvo::prelude::*;
 
-use crate::user::{verify_pin, DBUser};
+use crate::{
+    logger,
+    user::{verify_pin, DBUser},
+};
 
 #[handler]
 pub async fn balance_check(req: &mut Request, res: &mut Response) {
@@ -27,10 +30,25 @@ pub async fn balance_check(req: &mut Request, res: &mut Response) {
             Some(user) => {
                 if !verify_pin(&user.pin, &payload.pin) {
                     res.status_code(StatusCode::CREATED);
+                    logger::log(
+                        logger::Actions::GetLogs {
+                            user: &payload.acc1,
+                        },
+                        logger::Return::Failed,
+                    )
+                    .await;
                     return res.render("wrong pin");
                 }
                 res.status_code(StatusCode::OK);
                 res.render(user.balance);
+                logger::log(
+                    logger::Actions::GetLogs {
+                        user: &payload.acc1,
+                    },
+                    logger::Return::Success,
+                )
+                .await;
+                return;
             }
             None => {
                 res.status_code(StatusCode::CREATED);
@@ -42,4 +60,11 @@ pub async fn balance_check(req: &mut Request, res: &mut Response) {
             res.render("Failed to connect to the database");
         }
     }
+    logger::log(
+        logger::Actions::BalanceCheck {
+            user: &payload.acc1,
+        },
+        logger::Return::Failed,
+    )
+    .await;
 }
