@@ -1,59 +1,114 @@
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
 
-pub enum Actions{
-    Transaction{from: String, to: String, amount: f64},
-    Verification{user: String},
-    BalanceCheck{user: String}, 
-    GetLogs{user: String}
+pub enum Actions {
+    Transaction {
+        from: String,
+        to: String,
+        amount: String,
+    },
+    Verification {
+        user: String,
+    },
+    BalanceCheck {
+        user: String,
+    },
+    GetLogs {
+        user: String,
+    },
 }
 
 use std::io::Write;
 
-
-pub async fn log(action: Actions) {
+pub async fn log(action: Actions, was_successful: bool) {
     match action {
-        Actions::Transaction{from, to, amount} => {
-            let mut file = OpenOptions::new()
-                .write(true)
-                .append(true)
-                .open("requests.log")
-                .await.unwrap();
-            let mut buf: Vec<u8> = Vec::<u8>::new();
-            writeln!(buf, "Transaction from {} to {} for amount {}", from, to, amount).unwrap();
-            file.write_all(&buf).await.unwrap();
-        },
-        Actions::Verification{user} => {
-            let mut file = OpenOptions::new()
-                .write(true)
-                .append(true)
-                .open("requests.log")
-                .await.unwrap();
-            let mut buf: Vec<u8> = Vec::<u8>::new();
-            writeln!(buf, "Verification for user {}", user).unwrap();
-            file.write_all(&buf).await.unwrap();
+        Actions::Transaction { from, to, amount } => {
+            //create file if it does not exist
 
-        },
-        Actions::BalanceCheck{user }=> {
+            let mut file = OpenOptions::new()
+                .create(true)
+                .write(true)
+                .append(true)
+                .open("requests.log")
+                .await
+                .unwrap();
+            let mut buf: Vec<u8> = Vec::<u8>::new();
+            writeln!(
+                buf,
+                "Transaction from {} to {} for amount {} : Action was {}",
+                from,
+                to,
+                amount,
+                if was_successful {
+                    "successful"
+                } else {
+                    "unsuccessful"
+                }
+            )
+            .unwrap();
+            file.write_all(&buf).await.unwrap();
+        }
+        Actions::Verification { user } => {
             let mut file = OpenOptions::new()
                 .write(true)
                 .append(true)
                 .open("requests.log")
-                .await.unwrap();
+                .await
+                .unwrap();
             let mut buf: Vec<u8> = Vec::<u8>::new();
-            writeln!(buf, "Balance check for user {}", user).unwrap();
+            writeln!(
+                buf,
+                "Verification for user {} : Action was {}",
+                user,
+                if was_successful {
+                    "successful"
+                } else {
+                    "unsuccessful"
+                }
+            )
+            .unwrap();
             file.write_all(&buf).await.unwrap();
-
-        },
-        Actions::GetLogs{user} => {
+        }
+        Actions::BalanceCheck { user } => {
             let mut file = OpenOptions::new()
                 .write(true)
                 .append(true)
                 .open("requests.log")
-                .await.unwrap();
+                .await
+                .unwrap();
             let mut buf: Vec<u8> = Vec::<u8>::new();
-            writeln!(buf, "Get logs for user {}", user).unwrap();
+            writeln!(
+                buf,
+                "Balance check for user {}: Action was {}",
+                user,
+                if was_successful {
+                    "successful"
+                } else {
+                    "unsuccessful"
+                }
+            )
+            .unwrap();
             file.write_all(&buf).await.unwrap();
-
+        }
+        Actions::GetLogs { user } => {
+            let mut file = OpenOptions::new()
+                .write(true)
+                .append(true)
+                .open("requests.log")
+                .await
+                .unwrap();
+            let mut buf: Vec<u8> = Vec::<u8>::new();
+            writeln!(
+                buf,
+                "Get logs for user {} : Action was {}",
+                user,
+                if was_successful {
+                    "successful"
+                } else {
+                    "unsuccessful"
+                }
+            )
+            .unwrap();
+            file.write_all(&buf).await.unwrap();
         }
     }
 }

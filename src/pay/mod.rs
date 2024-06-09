@@ -37,12 +37,22 @@ pub async fn pay(req: &mut Request, res: &mut Response) {
         }
         None => payload,
     };
-    let payment = process_payment(payload).await;
+    let payment = process_payment(&payload).await;
     match payment {
         Ok(payment) => match payment {
             Ok(_) => {
                 res.status_code(StatusCode::OK);
                 res.render("success");
+                log(
+                    crate::logger::Actions::Transaction {
+                        from: payload.from,
+                        to: payload.to,
+                        amount: payload.amount,
+                    },
+                    true,
+                )
+                .await;
+                return;
             }
             Err(e) => {
                 res.status_code(StatusCode::CREATED);
@@ -54,4 +64,13 @@ pub async fn pay(req: &mut Request, res: &mut Response) {
             res.render("Failed to connect to the database");
         }
     }
+    log(
+        crate::logger::Actions::Transaction {
+            from: payload.from,
+            to: payload.to,
+            amount: payload.amount,
+        },
+        false,
+    )
+    .await;
 }

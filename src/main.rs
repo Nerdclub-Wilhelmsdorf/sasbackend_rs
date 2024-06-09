@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::{self, Cors};
 use salvo::http::Method;
@@ -15,10 +17,10 @@ const TAX_FACTOR: &str = "1.1";
 static DB: once_cell::sync::Lazy<Surreal<Client>> = once_cell::sync::Lazy::new(Surreal::init);
 mod balance_check;
 mod get_logs;
+mod logger;
 mod pay;
 mod user;
 mod verify_account;
-mod logger;
 #[handler]
 async fn hello() -> &'static str {
     "0"
@@ -29,6 +31,8 @@ async fn main() {
     tracing_subscriber::fmt().init();
     let cert = tokio::fs::read("../fullchain.pem").await.unwrap();
     let key = tokio::fs::read("../privkey.pem").await.unwrap();
+    //wait to ensure the database is up
+    tokio::time::sleep(Duration::from_secs(1)).await;
     db_connect().await;
     let cors = Cors::new()
         .allow_origin(cors::Any)
