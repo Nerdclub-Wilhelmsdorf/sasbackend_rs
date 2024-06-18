@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -53,6 +54,8 @@ func main() {
 	fmt.Println("[6] getlogs - get the logs of an account")
 	fmt.Println("[7] transfer - transfer money between accounts")
 	fmt.Println("[8] reversal - reverse a transaction")
+	fmt.Println("[9] getlog - get logs from an account as a CSV file")
+
 	fmt.Println("[0] exit - exit the program")
 	fmt.Println("Please enter the number of the command you would like to run:")
 	scanner := bufio.NewScanner(os.Stdin)
@@ -78,6 +81,8 @@ func main() {
 		transfer()
 	case "8":
 		reversal()
+	case "9":
+		getlog_csv()
 	case "0":
 		os.Exit(0)
 	}
@@ -427,7 +432,6 @@ func readLogs(ID string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to unmarshal account data: %w", err)
 	}
-	fmt.Println(acc1.Transactions)
 	if acc1.Transactions == "" {
 		return "", fmt.Errorf("no transactions found for account with ID %s", ID)
 	} else {
@@ -758,4 +762,57 @@ func logfile(transaction TransactionLog) error {
 		return err
 	}
 	return nil
+}
+
+func getlog_csv() {
+	var id string
+	fmt.Println("Enter Account ID:")
+	fmt.Scanln(&id)
+	logs, err := readLogs("user:" + id)
+	if err != nil {
+		panic(err)
+	}
+	unfilteredlogsArray := strings.Split(logs, "###")
+	logsArray := []string{}
+	for _, log := range unfilteredlogsArray {
+		if log != "" {
+			logsArray = append(logsArray, log)
+		}
+	}
+	transactions := []TransactionLog{}
+	for _, logJSON := range logsArray {
+		transaction := TransactionLog{}
+		json.Unmarshal([]byte(logJSON), &transaction)
+		transactions = append(transactions, transaction)
+	}
+	fmt.Println("This Panic might not be an error, please check if the file has been created")
+	if hasFile(id + ".csv") {
+		err := os.Remove(id + ".csv")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	f, err := os.OpenFile(id+".csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	writer := csv.NewWriter(f)
+	defer writer.Flush()
+	err = writer.Write([]string{"Time", "From", "To", "Amount"})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, transaction := range transactions {
+		err = writer.Write([]string{transaction.Time, transaction.From, transaction.To, transaction.Amount})
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func hasFile(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
 }
