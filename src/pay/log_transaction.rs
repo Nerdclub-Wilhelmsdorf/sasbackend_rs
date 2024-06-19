@@ -3,7 +3,7 @@ use std::str::FromStr;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
-use crate::{user::DBUser, TAX_FACTOR};
+use crate::{logger, user::DBUser, TAX_FACTOR};
 
 use super::process_payment::PaymentRequest;
 
@@ -21,7 +21,7 @@ pub async fn log_transaction(
     receiver: DBUser,
     bank: DBUser,
 ) -> Result<(), surrealdb::Error> {
-    let time = curr_time();
+    let time = logger::curr_time();
     let transaction_reciever = TransactionLog {
         time: time.clone(),
         from: sender.id.id.to_string(),
@@ -39,7 +39,7 @@ pub async fn log_transaction(
     };
     let transaction_sender = serde_json::to_string(&transaction_sender).unwrap();
     let transaction_bank = TransactionLog {
-        time: time,
+        time,
         from: sender.id.id.to_string(),
         to: receiver.id.id.to_string(),
         amount: (Decimal::from_str(&payload.amount).unwrap()
@@ -83,9 +83,3 @@ pub async fn log_transaction(
     Ok(())
 }
 
-fn curr_time() -> String {
-    let now = chrono::Local::now();
-    let date = now.format("%d-%m-%Y %H:%M:%S");
-    let date = date.to_string();
-    date
-}

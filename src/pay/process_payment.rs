@@ -65,7 +65,7 @@ pub async fn process_payment(
     let tax = Decimal::from_str(TAX_FACTOR).unwrap();
     let amount = Decimal::from_str(&payload.amount).unwrap();
     let tax_amount = amount * tax;
-    let tax_amount_bank: Decimal = tax_amount.clone() - amount;
+    let tax_amount_bank: Decimal = tax_amount - amount;
     let tax_amount = tax_amount.to_string();
     let tax_amount_bank = tax_amount_bank.to_string();
     if !sender.has_sufficient_funds(&tax_amount).await {
@@ -92,9 +92,9 @@ pub async fn process_payment(
         Ok(_) => {}
         Err(_) => return Ok(Err(PaymentError::FailedMoneyTransfer)),
     }
-    match log_transaction::log_transaction(&payload, sender, receiver, bank).await {
+    match log_transaction::log_transaction(payload, sender, receiver, bank).await {
         Ok(_) => {}
         Err(_) => return Ok(Err(PaymentError::FailedMoneyTransfer)),
     }
-    return Ok(Ok("success".to_string()));
+    Ok(Ok("success".to_string()))
 }
