@@ -29,8 +29,6 @@ async fn hello() -> &'static str {
 
 #[tokio::main]
 async fn main() {
-        //wait to ensure the database is up
-    tokio::time::sleep(Duration::from_secs(3)).await;
     tracing_subscriber::fmt().init();
     let cert = tokio::fs::read("../fullchain.pem").await.unwrap();
     let key = tokio::fs::read("../privkey.pem").await.unwrap();
@@ -55,7 +53,16 @@ async fn main() {
 }
 
 async fn db_connect() {
-    DB.connect::<Ws>(DBURL).await.unwrap();
+    loop {
+        let con = DB.connect::<Ws>(DBURL).await;
+        match con {
+            Ok(_) => break,
+            Err(e) => {
+                println!("Failed to connect to the database: {}, retrying", e);
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+        }
+    }
     DB.signin(Root {
         username: DBUSER,
         password: DBPASS,
