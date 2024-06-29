@@ -29,11 +29,11 @@ async fn hello() -> &'static str {
 
 #[tokio::main]
 async fn main() {
+        //wait to ensure the database is up
+    tokio::time::sleep(Duration::from_secs(3)).await;
     tracing_subscriber::fmt().init();
     let cert = tokio::fs::read("../fullchain.pem").await.unwrap();
     let key = tokio::fs::read("../privkey.pem").await.unwrap();
-    //wait to ensure the database is up
-    tokio::time::sleep(Duration::from_secs(3)).await;
     db_connect().await;
     let cors: cors::CorsHandler = Cors::new()
         .allow_origin(cors::Any)
