@@ -118,5 +118,6 @@ pub async fn log(action: Actions, was_successful: bool) {
 }
 pub fn curr_time() -> String {
     let now = chrono::Local::now();
+    let date = now.format("%m-%d-%Y %H:%M:%S");
     date.to_string()
 }

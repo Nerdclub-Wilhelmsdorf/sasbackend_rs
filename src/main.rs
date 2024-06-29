@@ -21,6 +21,7 @@ mod logger;
 mod pay;
 mod user;
 mod verify_account;
+mod router;
 #[handler]
 async fn hello() -> &'static str {
     "0"
@@ -34,27 +35,13 @@ async fn main() {
     //wait to ensure the database is up
     tokio::time::sleep(Duration::from_secs(1)).await;
     db_connect().await;
-    let cors = Cors::new()
+    let cors: cors::CorsHandler = Cors::new()
         .allow_origin(cors::Any)
         .allow_methods(vec![Method::GET, Method::POST, Method::DELETE])
         .allow_headers(vec!["authorization", "content-type"])
         .into_handler();
-    let root_route = Router::new().get(hello);
-    let pay_route = Router::new().path("/pay").post(pay::pay);
-    let balance_route = Router::new()
-        .path("/balanceCheck")
-        .post(balance_check::balance_check);
-    let log_route = Router::new().path("/getLogs").post(get_logs::get_logs);
-    let verify_route = Router::new()
-        .path("/verify")
-        .post(verify_account::verify_account);
-    let router = Router::new()
-        .push(root_route)
-        .push(pay_route)
-        .push(log_route)
-        .push(verify_route)
-        .push(balance_route);
-    let service = Service::new(router)
+        let router = router::get_router();
+        let service = Service::new(router)
         .hoop(cors)
         .hoop(Logger::new())
         .hoop(authorization);
@@ -102,3 +89,6 @@ async fn authorization(req: &mut Request, res: &mut Response) {
         }
     }
 }
+
+
+
