@@ -33,7 +33,7 @@ async fn main() {
     let cert = tokio::fs::read("../fullchain.pem").await.unwrap();
     let key = tokio::fs::read("../privkey.pem").await.unwrap();
     //wait to ensure the database is up
-    tokio::time::sleep(Duration::from_secs(1)).await;
+    tokio::time::sleep(Duration::from_secs(3)).await;
     db_connect().await;
     let cors: cors::CorsHandler = Cors::new()
         .allow_origin(cors::Any)
