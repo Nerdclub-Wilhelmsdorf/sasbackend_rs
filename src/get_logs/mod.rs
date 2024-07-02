@@ -27,7 +27,15 @@ pub async fn get_logs(req: &mut Request, res: &mut Response) {
     match user {
         Ok(user) => match user {
             Some(user) => {
-                if !verify(&payload.pin, &user.pin).unwrap() {
+                let verified = verify(&payload.pin, &user.pin);
+                let verified = match verified {
+                    Ok(verified) => verified,
+                    Err(_) =>{
+                        return res.render("wrong pin")
+                    }
+                };
+                
+                if !verified {
                     res.status_code(StatusCode::CREATED);
                     logger::log(logger::Actions::BalanceCheck { user: payload.acc }, false).await;
                     return res.render("wrong pin");
