@@ -50,8 +50,9 @@ pub async fn process_payment(
     if receiver.is_none() {
         return Ok(Err(PaymentError::UserNotFound(payload.to.clone())));
     }
+    let zentralbank = "zentralbank".to_string();
     if bank.is_none() {
-        return Ok(Err(PaymentError::UserNotFound("zentralbank".to_string())));
+        return Ok(Err(PaymentError::UserNotFound(zentralbank)));
     }
     let sender = sender.unwrap();
     let receiver = receiver.unwrap();
