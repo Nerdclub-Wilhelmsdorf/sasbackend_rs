@@ -30,13 +30,14 @@ pub async fn pay(req: &mut Request, res: &mut Response) {
             return res.render("Failed to parse the request, are the values set according to the API documentation?");
         }
     };
-    let payload = match payload.validate() {
+    let mut payload = match payload.validate() {
         Some(e) => {
             res.status_code(StatusCode::CREATED);
             return res.render(e);
         }
         None => payload,
     };
+    payload.amount = payload.amount.trim_start_matches('0').to_string();  
     let payment = process_payment(&payload).await;
     match payment {
         Ok(payment) => match payment {
