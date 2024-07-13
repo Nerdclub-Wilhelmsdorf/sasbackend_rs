@@ -19,9 +19,9 @@ mod balance_check;
 mod get_logs;
 mod logger;
 mod pay;
+mod router;
 mod user;
 mod verify_account;
-mod router;
 #[handler]
 async fn hello() -> &'static str {
     "0"
@@ -38,14 +38,14 @@ async fn main() {
         .allow_methods(vec![Method::GET, Method::POST, Method::DELETE])
         .allow_headers(vec!["authorization", "content-type"])
         .into_handler();
-        let router = router::get_router();
-        let service = Service::new(router)
+    let router = router::get_router();
+    let service = Service::new(router)
         .hoop(cors)
         .hoop(Logger::new())
         .hoop(authorization);
     let config = RustlsConfig::new(Keycert::new().cert(cert.as_slice()).key(key.as_slice()));
-    let listener = TcpListener::new(("saswdorf.de", 8443)).rustls(config.clone());
-    let acceptor = QuinnListener::new(config, ("saswdorf.de", 8443))
+    let listener = TcpListener::new(("xn--drmany-wxa.de", 8443)).rustls(config.clone());
+    let acceptor = QuinnListener::new(config, ("xn--drmany-wxa.de", 8443))
         .join(listener)
         .bind()
         .await;
@@ -96,6 +96,3 @@ async fn authorization(req: &mut Request, res: &mut Response) {
         }
     }
 }
-
-
-
