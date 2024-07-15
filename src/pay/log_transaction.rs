@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use serde::Serialize;
 
 use crate::{logger, user::DBUser, TAX_FACTOR};
@@ -22,20 +23,26 @@ pub async fn log_transaction(
     bank: DBUser,
 ) -> Result<(), surrealdb::Error> {
     let time = logger::curr_time();
+    let tax: Decimal = Decimal::from_str(TAX_FACTOR).unwrap();
+    let amount = Decimal::from_str(&payload.amount).unwrap();
+    let tax_amount = amount - (amount * (dec!(1) / Decimal::from_str(TAX_FACTOR).unwrap()));
+    let tax_amount_bank: Decimal = amount / tax;
+    let tax_amount = tax_amount.to_string();
+    let amount = amount.to_string();
+    let tax_amount_bank = tax_amount_bank.to_string();
+
     let transaction_reciever = TransactionLog {
         time: &time,
         from: &sender.id.id.to_string(),
         to: &receiver.id.id.to_string(),
-        amount: &payload.amount,
+        amount: &tax_amount,
     };
     let transaction_reciever = serde_json::to_string(&transaction_reciever).unwrap();
     let transaction_sender = TransactionLog {
         time: &time,
         from: &sender.id.id.to_string(),
         to: &receiver.id.id.to_string(),
-        amount: &(Decimal::from_str(&payload.amount).unwrap()
-            * Decimal::from_str(TAX_FACTOR).unwrap())
-        .to_string(),
+        amount: &payload.amount,
     };
     let transaction_sender = serde_json::to_string(&transaction_sender).unwrap();
     let transaction_bank = TransactionLog {

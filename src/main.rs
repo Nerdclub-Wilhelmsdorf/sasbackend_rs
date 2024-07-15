@@ -13,7 +13,7 @@ const DBURL: &str = "127.0.0.1:8000";
 const DBUSER: &str = "guffe";
 const DBPASS: &str = "IE76qzUk0t78JGhTz";
 const TOKEN: &str = "Bearer W_97xyk8G]]w";
-const TAX_FACTOR: &str = "1.1";
+const TAX_FACTOR: &str = "10";
 static DB: once_cell::sync::Lazy<Surreal<Client>> = once_cell::sync::Lazy::new(Surreal::init);
 mod balance_check;
 mod get_logs;

@@ -22,8 +22,8 @@ use self::process_payment::process_payment;
 
 #[handler]
 pub async fn pay(req: &mut Request, res: &mut Response) {
-    let payload_result = req.parse_json::<PaymentRequest>().await;
-    let payload = match payload_result {
+    let payload = req.parse_json::<PaymentRequest>().await;
+    let payload = match payload {
         Ok(payload) => payload,
         Err(_) => {
             res.status_code(StatusCode::CREATED);
@@ -37,7 +37,12 @@ pub async fn pay(req: &mut Request, res: &mut Response) {
         }
         None => payload,
     };
+
+
     payload.amount = payload.amount.trim_start_matches('0').to_string();  
+    if payload.amount.parse::<f64>().unwrap() < 1.0 {
+        payload.amount = "0".to_string() + payload.amount.as_str();
+    }
     let payment = process_payment(&payload).await;
     match payment {
         Ok(payment) => match payment {

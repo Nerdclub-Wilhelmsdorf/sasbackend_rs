@@ -6,6 +6,7 @@ use crate::{
     TAX_FACTOR,
 };
 use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -27,6 +28,9 @@ impl PaymentRequest {
         }
         if self.amount.parse::<f64>().is_err() {
             return Some("invalid amount".to_string());
+        }
+        if self.amount.parse::<f64>().unwrap() <= 0.0 {
+            return Some("amount must be greater than 0".to_string());
         }
         if self.from == self.to {
             return Some("sender and receiver are the same".to_string());
@@ -63,24 +67,25 @@ pub async fn process_payment(
     if !verify_pin(&sender.pin, &payload.pin) {
         return Ok(Err(PaymentError::IncorrectPin));
     }
-    let tax = Decimal::from_str(TAX_FACTOR).unwrap();
+    let tax: Decimal = Decimal::from_str(TAX_FACTOR).unwrap();
     let amount = Decimal::from_str(&payload.amount).unwrap();
-    let tax_amount = amount * tax;
-    let tax_amount_bank: Decimal = tax_amount - amount;
+    let tax_amount = amount - (amount * (dec!(1) / Decimal::from_str(TAX_FACTOR).unwrap()));
+    let tax_amount_bank: Decimal = amount / tax;
     let tax_amount = tax_amount.to_string();
+    let amount = amount.to_string();
     let tax_amount_bank = tax_amount_bank.to_string();
-    if !sender.has_sufficient_funds(&tax_amount).await {
+    if !sender.has_sufficient_funds(&amount).await {
         return Ok(Err(PaymentError::InsufficientFunds));
     }
     match sender
-        .update_balance(&tax_amount, TransferType::Subtract)
+        .update_balance(&amount, TransferType::Subtract)
         .await
     {
         Ok(_) => {}
         Err(_) => return Ok(Err(PaymentError::FailedMoneyTransfer)),
     }
     match receiver
-        .update_balance(&payload.amount, TransferType::Add)
+        .update_balance(&tax_amount, TransferType::Add)
         .await
     {
         Ok(_) => {}
