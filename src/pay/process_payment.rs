@@ -2,13 +2,15 @@ use std::str::FromStr;
 
 use super::{log_transaction, payment_errors::PaymentError};
 use crate::{
+    lock_user::{self, unlock},
     user::{verify_pin, DBUser, TransferType},
     TAX_FACTOR,
 };
+use lock_user::increment_failed_attempts;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
+use salvo::Request;
 use serde::Deserialize;
-
 #[derive(Deserialize)]
 pub struct PaymentRequest {
     pub from: String,
@@ -44,6 +46,7 @@ impl PaymentRequest {
 
 pub async fn process_payment(
     payload: &PaymentRequest,
+    Request: &mut Request,
 ) -> Result<Result<String, PaymentError>, surrealdb::Error> {
     let sender = DBUser::fetch_user(&payload.from).await?;
     let receiver = DBUser::fetch_user(&payload.to).await?;
@@ -65,8 +68,10 @@ pub async fn process_payment(
         return Ok(Err(PaymentError::SameUser));
     }
     if !verify_pin(&sender.pin, &payload.pin) {
+        increment_failed_attempts(Request.remote_addr().to_owned()).await;
         return Ok(Err(PaymentError::IncorrectPin));
     }
+    unlock(Request.remote_addr().to_owned()).await;
     let tax: Decimal = Decimal::from_str(TAX_FACTOR).unwrap();
     let amount = Decimal::from_str(&payload.amount).unwrap();
     let tax_amount = amount - (amount * (dec!(1) / Decimal::from_str(TAX_FACTOR).unwrap()));
@@ -77,10 +82,7 @@ pub async fn process_payment(
     if !sender.has_sufficient_funds(&amount).await {
         return Ok(Err(PaymentError::InsufficientFunds));
     }
-    match sender
-        .update_balance(&amount, TransferType::Subtract)
-        .await
-    {
+    match sender.update_balance(&amount, TransferType::Subtract).await {
         Ok(_) => {}
         Err(_) => return Ok(Err(PaymentError::FailedMoneyTransfer)),
     }

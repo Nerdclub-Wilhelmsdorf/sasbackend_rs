@@ -3,7 +3,11 @@ mod verify_request;
 use bcrypt::verify;
 use salvo::prelude::*;
 
-use crate::{logger, user::DBUser};
+use crate::{
+    lock_user::{increment_failed_attempts, unlock},
+    logger,
+    user::DBUser,
+};
 
 #[handler]
 pub async fn verify_account(req: &mut Request, res: &mut Response) {
@@ -30,9 +34,10 @@ pub async fn verify_account(req: &mut Request, res: &mut Response) {
                 if !verify(&payload.pin, &user.pin).unwrap() {
                     res.status_code(StatusCode::CREATED);
                     logger::log(logger::Actions::Verification { user: payload.name }, false).await;
-
+                    increment_failed_attempts(req.remote_addr().to_owned()).await;
                     return res.render("failed to verify account");
                 }
+                unlock(req.remote_addr().to_owned()).await;
                 res.status_code(StatusCode::OK);
                 res.render("account verified");
                 logger::log(logger::Actions::Verification { user: payload.name }, true).await;

@@ -38,12 +38,11 @@ pub async fn pay(req: &mut Request, res: &mut Response) {
         None => payload,
     };
 
-
-    payload.amount = payload.amount.trim_start_matches('0').to_string();  
+    payload.amount = payload.amount.trim_start_matches('0').to_string();
     if payload.amount.parse::<f64>().unwrap() < 1.0 {
         payload.amount = "0".to_string() + payload.amount.as_str();
     }
-    let payment = process_payment(&payload).await;
+    let payment = process_payment(&payload, req).await;
     match payment {
         Ok(payment) => match payment {
             Ok(_) => {

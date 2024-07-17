@@ -3,7 +3,7 @@ mod balance_request;
 use salvo::prelude::*;
 
 use crate::{
-    logger,
+    lock_user, logger,
     user::{verify_pin, DBUser},
 };
 
@@ -31,8 +31,10 @@ pub async fn balance_check(req: &mut Request, res: &mut Response) {
                 if !verify_pin(&user.pin, &payload.pin) {
                     res.status_code(StatusCode::CREATED);
                     logger::log(logger::Actions::BalanceCheck { user: payload.acc1 }, false).await;
+                    lock_user::increment_failed_attempts(req.remote_addr().to_owned()).await;
                     return res.render("wrong pin");
                 }
+                lock_user::unlock(req.remote_addr().to_owned()).await;
                 res.status_code(StatusCode::OK);
                 res.render(user.balance);
                 logger::log(logger::Actions::BalanceCheck { user: payload.acc1 }, true).await;

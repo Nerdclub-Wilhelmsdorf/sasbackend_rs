@@ -1,5 +1,8 @@
+use std::sync::Arc;
 use std::time::Duration;
 
+use lock_user::is_locked;
+use once_cell::sync::Lazy;
 use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::{self, Cors};
 use salvo::http::Method;
@@ -17,6 +20,7 @@ const TAX_FACTOR: &str = "10";
 static DB: once_cell::sync::Lazy<Surreal<Client>> = once_cell::sync::Lazy::new(Surreal::init);
 mod balance_check;
 mod get_logs;
+mod lock_user;
 mod logger;
 mod pay;
 mod router;
@@ -42,10 +46,11 @@ async fn main() {
     let service = Service::new(router)
         .hoop(cors)
         .hoop(Logger::new())
-        .hoop(authorization);
+        .hoop(authorization)
+        .hoop(check_for_user_lock);
     let config = RustlsConfig::new(Keycert::new().cert(cert.as_slice()).key(key.as_slice()));
-    let listener = TcpListener::new(("xn--drmany-wxa.de", 8443)).rustls(config.clone());
-    let acceptor = QuinnListener::new(config, ("xn--drmany-wxa.de", 8443))
+    let listener = TcpListener::new(("banking.saswdorf.de", 443)).rustls(config.clone());
+    let acceptor = QuinnListener::new(config, ("banking.saswdorf.de", 443))
         .join(listener)
         .bind()
         .await;
@@ -94,5 +99,13 @@ async fn authorization(req: &mut Request, res: &mut Response) {
             res.status_code(StatusCode::UNAUTHORIZED);
             return res.render("Invalid token");
         }
+    }
+}
+
+#[handler]
+async fn check_for_user_lock(req: &mut Request, res: &mut Response) {
+    if is_locked(req.remote_addr().to_owned()).await {
+        res.status_code(StatusCode::TOO_MANY_REQUESTS);
+        return res.render("suspended!");
     }
 }

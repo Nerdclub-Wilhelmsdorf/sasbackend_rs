@@ -3,7 +3,11 @@ mod log_request;
 use bcrypt::verify;
 use salvo::prelude::*;
 
-use crate::{logger, user::DBUser};
+use crate::{
+    lock_user::{increment_failed_attempts, unlock},
+    logger,
+    user::DBUser,
+};
 
 #[handler]
 pub async fn get_logs(req: &mut Request, res: &mut Response) {
@@ -30,16 +34,19 @@ pub async fn get_logs(req: &mut Request, res: &mut Response) {
                 let verified = verify(&payload.pin, &user.pin);
                 let verified = match verified {
                     Ok(verified) => verified,
-                    Err(_) =>{
-                        return res.render("wrong pin")
+                    Err(_) => {
+                        res.status_code(StatusCode::CREATED);
+                        return res.render("wrong pin");
                     }
                 };
-                
+
                 if !verified {
                     res.status_code(StatusCode::CREATED);
                     logger::log(logger::Actions::BalanceCheck { user: payload.acc }, false).await;
+                    increment_failed_attempts(req.remote_addr().to_owned()).await;
                     return res.render("wrong pin");
                 }
+                increment_failed_attempts(req.remote_addr().to_owned()).await;
                 res.status_code(StatusCode::OK);
                 res.render(user.transactions);
                 logger::log(logger::Actions::GetLogs { user: payload.acc }, true).await;
