@@ -26,7 +26,7 @@ pub async fn increment_failed_attempts(ip: SocketAddr) {
             if user.failed_attempts >= 3 {
                 // start unlock timer
                 tokio::spawn(async move {
-                    tokio::time::sleep(std::time::Duration::from_secs(60 * 5)).await;
+                    tokio::time::sleep(std::time::Duration::from_secs(60 * 15)).await;
                     let mut users = LOCKED_USERS.write().await;
                     users.users.retain(|u| !matches!(&u.ip, ip));
                 });
