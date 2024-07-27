@@ -1,8 +1,6 @@
-use std::sync::Arc;
 use std::time::Duration;
 
 use lock_user::is_locked;
-use once_cell::sync::Lazy;
 use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::{self, Cors};
 use salvo::http::Method;
