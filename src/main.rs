@@ -103,7 +103,7 @@ async fn authorization(req: &mut Request, res: &mut Response) {
 #[handler]
 async fn check_for_user_lock(req: &mut Request, res: &mut Response) {
     if is_locked(req.remote_addr().to_owned()).await {
-        res.status_code(StatusCode::TOO_MANY_REQUESTS);
+        res.status_code(StatusCode::CREATED);
         return res.render("suspended!");
     }
 }
