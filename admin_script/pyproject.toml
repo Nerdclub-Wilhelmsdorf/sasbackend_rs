@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "admin-script"
+version = "0.1.0"
+description = ""
+authors = ["Len Blum <mail@lenblum.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+bcrypt = "^4.2.0"
+surrealdb = "^3.2.0"
+
+[tool.poetry.scripts]
+admin = "admin_script.main:start"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
