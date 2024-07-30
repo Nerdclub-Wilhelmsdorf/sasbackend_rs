@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from admin_script import change_pin, create_user, delete_user, get_logs, list_users, reversal, transfer, verify
+from admin_script import change_pin, create_user, delete_user, get_logs, list_users, transfer, verify
 
 DBPSSWD = "IE76qzUk0t78JGhTz"
 DBUSER = "guffe"

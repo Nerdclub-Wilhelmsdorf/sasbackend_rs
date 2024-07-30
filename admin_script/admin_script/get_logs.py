@@ -14,11 +14,12 @@ async def get_logs():
         await db.use("user", "user")
         data = await db.select(id)
         logs = data["transactions"]
+        logs = str.removeprefix(logs, "###")
         if(logs == ""):
             print("No logs found")
             return
         logs = logs.split("###")
-        filename = data["id"] + '.csv'
+        filename = str.removeprefix(data["id"], "user:") + '.csv'
         try:
             os.remove(filename)
         except OSError:
