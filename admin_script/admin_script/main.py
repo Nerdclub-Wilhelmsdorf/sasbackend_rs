@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from admin_script import change_pin, create_user, delete_user, list_users
+from admin_script import change_pin, create_user, delete_user, get_logs, list_users, reversal, transfer, verify
 
 DBPSSWD = "IE76qzUk0t78JGhTz"
 DBUSER = "guffe"
@@ -13,10 +13,8 @@ async def main():
     print("[3] list - list all accounts")
     print("[4] changepin - change the pin of an account")
     print("[5] verify - verify an account")
-    print("[6] getlogs - get the logs of an account")
-    print("[7] transfer - transfer money between accounts")
-    print("[8] reversal - reverse a transaction")
-    print("[9] getlog - get logs from an account as a CSV file")
+    print("[6] getlogs - get the logs of an account as CSV")
+    print("[7] transaction - induce a transaction")
     print("[0] exit - exit the program")
     print("Please enter the number of the command you would like to run:")
     scanner = input()
@@ -33,15 +31,11 @@ async def matchInput(scanner):
         case "4":
             await change_pin.change_pin()
         case "5":
-            print("verify")
+            await verify.verify_user()
         case "6":
-            print("getlogs")
+            await get_logs.get_logs()
         case "7":
-            print("transfer")
-        case "8":
-            print("reversal")
-        case "9":
-            print("getlog")
+            await transfer.transfer()
         case "0":
             print("exit")
         case _:
@@ -70,3 +64,16 @@ def matchpswd(password, hashed):
     lobytes = password.encode('utf-8')
     hashed = hashed.encode('utf-8')
     return bcrypt.checkpw(lobytes, hashed)
+
+async def update_field(id, field, value):
+    from surrealdb import Surreal
+    async with Surreal("ws://localhost:8000/rpc") as db:
+        await db.signin({"user": DBUSER, "pass": DBPSSWD})
+        await db.use("user", "user")
+        res = await db.query(f"UPDATE {id} SET {field} = '{value}'",{})
+        return res
+
+
+def get_time():
+    import datetime
+    return datetime.datetime.now().strftime("%m-%d-%y %H:%M:%S")
