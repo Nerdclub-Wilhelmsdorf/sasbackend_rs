@@ -5,12 +5,13 @@ use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::cors::{self, Cors};
 use salvo::http::Method;
 use salvo::prelude::*;
+use surrealdb::engine::remote::ws::Wss;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
     opt::auth::Root,
     Surreal,
 };
-const DBURL: &str = "127.0.0.1:8000";
+const DBURL: &str = "banking.saswdorf.de:8000";
 const DBUSER: &str = "guffe";
 const DBPASS: &str = "IE76qzUk0t78JGhTz";
 const TOKEN: &str = "Bearer W_97xyk8G]]w";
@@ -57,7 +58,7 @@ async fn main() {
 
 async fn db_connect() {
     loop {
-        let con = DB.connect::<Ws>(DBURL).await;
+        let con = DB.connect::<Wss>(DBURL).await;
         match con {
             Ok(_) => break,
             Err(e) => {
