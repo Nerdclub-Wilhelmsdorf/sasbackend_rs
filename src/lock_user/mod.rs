@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use tokio::sync::{RwLock};
+use tokio::sync::RwLock;
 
 use once_cell::sync::Lazy;
 use salvo::conn::SocketAddr;
@@ -24,18 +24,18 @@ pub async fn increment_failed_attempts(ip: SocketAddr) {
     for user in users.users.iter_mut() {
         if matches!(&user.ip, ip) {
             user.failed_attempts += 1;
-                if !user.is_resetting {
-                    user.is_resetting = true;
-                    tokio::spawn(async move {
-                        tokio::time::sleep(std::time::Duration::from_secs(60 * 20)).await;
-                        let mut users = LOCKED_USERS.write().await;
-                        users.users.retain(|u| !matches!(&u.ip, ip));
-                    });    
-                }
+            if !user.is_resetting {
+                user.is_resetting = true;
+                tokio::spawn(async move {
+                    tokio::time::sleep(std::time::Duration::from_secs(60 * 20)).await;
+                    let mut users = LOCKED_USERS.write().await;
+                    users.users.retain(|u| !matches!(&u.ip, ip));
+                });
             }
-            found = true;
-            break;
         }
+        found = true;
+        break;
+    }
     if !found {
         users.users.push(User {
             ip,
