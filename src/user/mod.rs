@@ -1,3 +1,4 @@
+use crate::errors::BackendError;
 use crate::DB;
 use rust_decimal::prelude::*;
 use rust_decimal_macros::dec;
@@ -40,7 +41,7 @@ impl DBUser {
         &self,
         key: &str,
         value: &str,
-    ) -> Result<Option<DBUser>, surrealdb::Error> {
+    ) -> Result<Option<DBUser>, BackendError> {
         let id = self.id.id.clone(); // Clone the id value
         let updated_user: Option<DBUser> = DB
             .update(("user", id)) // Use the cloned id value
@@ -53,7 +54,7 @@ impl DBUser {
         &self,
         amount: &str,
         transfer_type: TransferType,
-    ) -> Result<Option<DBUser>, surrealdb::Error> {
+    ) -> Result<Option<DBUser>, BackendError> {
         let id = self.id.id.clone(); // Clone the id value
         let current_user_state: Option<DBUser> = DB.select(("user", id.clone())).await?;
         let current_user_state = match current_user_state {

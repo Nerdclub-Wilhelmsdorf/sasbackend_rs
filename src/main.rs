@@ -24,6 +24,7 @@ mod logger;
 mod pay;
 mod router;
 mod user;
+mod errors;
 mod verify_account;
 #[handler]
 async fn hello() -> &'static str {

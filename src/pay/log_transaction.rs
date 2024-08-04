@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::Serialize;
 
-use crate::{logger, user::DBUser, TAX_FACTOR};
+use crate::{errors::BackendError, logger, user::DBUser, TAX_FACTOR};
 
 use super::process_payment::PaymentRequest;
 
@@ -21,7 +21,7 @@ pub async fn log_transaction(
     sender: DBUser,
     receiver: DBUser,
     bank: DBUser,
-) -> Result<(), surrealdb::Error> {
+) -> Result<(), BackendError> {
     let time = logger::curr_time();
     let amount = Decimal::from_str(&payload.amount).unwrap();
     let tax_amount = amount - (amount * (dec!(1) / Decimal::from_str(TAX_FACTOR).unwrap()));

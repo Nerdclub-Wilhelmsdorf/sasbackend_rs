@@ -1,7 +1,6 @@
 use process_payment::PaymentRequest;
 use salvo::prelude::*;
 mod log_transaction;
-mod payment_errors;
 mod process_payment;
 use crate::logger::log;
 
@@ -43,30 +42,25 @@ pub async fn pay(req: &mut Request, res: &mut Response) {
         payload.amount = "0".to_string() + payload.amount.as_str();
     }
     let payment = process_payment(&payload, req).await;
+
     match payment {
-        Ok(payment) => match payment {
-            Ok(_) => {
-                res.status_code(StatusCode::OK);
-                res.render("success");
-                log(
-                    crate::logger::Actions::Transaction {
-                        from: payload.from,
-                        to: payload.to,
-                        amount: payload.amount,
-                    },
-                    true,
-                )
-                .await;
-                return;
-            }
-            Err(e) => {
-                res.status_code(StatusCode::CREATED);
-                res.render(e.to_string());
-            }
-        },
-        Err(_) => {
+        Ok(_) => {
+            res.status_code(StatusCode::OK);
+            res.render("success");
+            log(
+                crate::logger::Actions::Transaction {
+                    from: payload.from,
+                    to: payload.to,
+                    amount: payload.amount,
+                },
+                true,
+            )
+            .await;
+            return;
+        }
+        Err(e) => {
             res.status_code(StatusCode::CREATED);
-            res.render("Failed to connect to the database");
+            res.render(e.to_string());
         }
     }
     log(

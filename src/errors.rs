@@ -1,3 +1,31 @@
+#![allow(dead_code)]
+
+
+use std::fmt;
+
+
+
+#[derive(Debug)]
+pub enum BackendError {
+    DataBaseError(surrealdb::Error),
+    PaymentError(PaymentError),
+}
+
+impl fmt::Display for BackendError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Backend error: {:?}", self)
+    }
+}
+
+
+impl From<surrealdb::Error> for BackendError {
+    fn from(e: surrealdb::Error) -> Self {
+        BackendError::DataBaseError(e)
+    }
+}
+
+
+#[derive(Debug)]
 pub enum PaymentError {
     //add lifetime to the user id
     UserNotFound(String),
