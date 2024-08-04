@@ -7,7 +7,7 @@ use salvo::http::Method;
 use salvo::prelude::*;
 use surrealdb::engine::remote::ws::Wss;
 use surrealdb::{
-    engine::remote::ws::{Client, Ws},
+    engine::remote::ws::Client,
     opt::auth::Root,
     Surreal,
 };

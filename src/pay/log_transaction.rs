@@ -23,10 +23,9 @@ pub async fn log_transaction(
     bank: DBUser,
 ) -> Result<(), surrealdb::Error> {
     let time = logger::curr_time();
-    let tax: Decimal = Decimal::from_str(TAX_FACTOR).unwrap();
     let amount = Decimal::from_str(&payload.amount).unwrap();
     let tax_amount = amount - (amount * (dec!(1) / Decimal::from_str(TAX_FACTOR).unwrap()));
-    let tax_amount_bank: Decimal = amount / tax;
+    let tax_amount_bank: Decimal = amount / Decimal::from_str(TAX_FACTOR).unwrap();
     let tax_amount = tax_amount.to_string();
     let amount = amount.to_string();
     let tax_amount_bank = tax_amount_bank.to_string();
@@ -42,17 +41,14 @@ pub async fn log_transaction(
         time: &time,
         from: &sender.id.id.to_string(),
         to: &receiver.id.id.to_string(),
-        amount: &payload.amount,
+        amount: &amount,
     };
     let transaction_sender = serde_json::to_string(&transaction_sender).unwrap();
     let transaction_bank = TransactionLog {
         time: &time,
         from: &sender.id.id.to_string(),
         to: &receiver.id.id.to_string(),
-        amount: &(Decimal::from_str(&payload.amount).unwrap()
-            * Decimal::from_str(TAX_FACTOR).unwrap()
-            - Decimal::from_str(&payload.amount).unwrap())
-        .to_string(),
+        amount: &tax_amount_bank
     };
     let transaction_bank = serde_json::to_string(&transaction_bank).unwrap();
     let mut sender_transactions: Vec<String> = sender

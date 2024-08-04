@@ -46,7 +46,7 @@ impl PaymentRequest {
 
 pub async fn process_payment(
     payload: &PaymentRequest,
-    Request: &mut Request,
+    request: &mut Request,
 ) -> Result<Result<String, PaymentError>, surrealdb::Error> {
     let sender = DBUser::fetch_user(&payload.from).await?;
     let receiver = DBUser::fetch_user(&payload.to).await?;
@@ -68,17 +68,17 @@ pub async fn process_payment(
         return Ok(Err(PaymentError::SameUser));
     }
     if !verify_pin(&sender.pin, &payload.pin) {
-        increment_failed_attempts(Request.remote_addr().to_owned()).await;
+        increment_failed_attempts(request.remote_addr().to_owned()).await;
         return Ok(Err(PaymentError::IncorrectPin));
     }
-    unlock(Request.remote_addr().to_owned()).await;
+    unlock(request.remote_addr().to_owned()).await;
     let tax: Decimal = Decimal::from_str(TAX_FACTOR).unwrap();
     let amount = Decimal::from_str(&payload.amount).unwrap();
     let tax_amount = amount - (amount * (dec!(1) / Decimal::from_str(TAX_FACTOR).unwrap()));
     let tax_amount_bank: Decimal = amount / tax;
     let tax_amount = tax_amount.to_string();
     let amount = amount.to_string();
-    let tax_amount_bank = tax_amount_bank.to_string();
+    let tax_amount_bank: String = tax_amount_bank.to_string();
     if !sender.has_sufficient_funds(&amount).await {
         return Ok(Err(PaymentError::InsufficientFunds));
     }
