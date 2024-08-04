@@ -1,8 +1,11 @@
 use std::str::FromStr;
 
-use super::{log_transaction};
+use super::log_transaction;
 use crate::{
-    errors::{BackendError, PaymentError}, lock_user::{self, unlock}, user::{verify_pin, DBUser, TransferType}, TAX_FACTOR
+    errors::{BackendError, PaymentError},
+    lock_user::{self, unlock},
+    user::{verify_pin, DBUser, TransferType},
+    TAX_FACTOR,
 };
 use lock_user::increment_failed_attempts;
 use rust_decimal::Decimal;
@@ -50,14 +53,20 @@ pub async fn process_payment(
     let receiver = DBUser::fetch_user(&payload.to).await?;
     let bank = DBUser::fetch_user(&"zentralbank".to_string()).await?;
     if sender.is_none() {
-        return Err(BackendError::PaymentError(PaymentError::UserNotFound(payload.from.clone())));
+        return Err(BackendError::PaymentError(PaymentError::UserNotFound(
+            payload.from.clone(),
+        )));
     }
     if receiver.is_none() {
-        return Err(BackendError::PaymentError(PaymentError::UserNotFound(payload.to.clone())));
+        return Err(BackendError::PaymentError(PaymentError::UserNotFound(
+            payload.to.clone(),
+        )));
     }
     let zentralbank = "zentralbank".to_string();
     if bank.is_none() {
-        return Err(BackendError::PaymentError(PaymentError::UserNotFound(zentralbank)));
+        return Err(BackendError::PaymentError(PaymentError::UserNotFound(
+            zentralbank,
+        )));
     }
     let sender = sender.unwrap();
     let receiver = receiver.unwrap();
@@ -96,11 +105,19 @@ pub async fn process_payment(
         .await
     {
         Ok(_) => {}
-        Err(_) => return Err(BackendError::PaymentError(PaymentError::FailedMoneyTransfer)),
+        Err(_) => {
+            return Err(BackendError::PaymentError(
+                PaymentError::FailedMoneyTransfer,
+            ))
+        }
     }
     match log_transaction::log_transaction(payload, sender, receiver, bank).await {
         Ok(_) => {}
-        Err(_) => return Err(BackendError::PaymentError(PaymentError::FailedMoneyTransfer)),
+        Err(_) => {
+            return Err(BackendError::PaymentError(
+                PaymentError::FailedMoneyTransfer,
+            ))
+        }
     }
     Ok("success".to_string())
 }

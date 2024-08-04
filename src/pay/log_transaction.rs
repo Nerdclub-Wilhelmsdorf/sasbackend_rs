@@ -48,7 +48,7 @@ pub async fn log_transaction(
         time: &time,
         from: &sender.id.id.to_string(),
         to: &receiver.id.id.to_string(),
-        amount: &tax_amount_bank
+        amount: &tax_amount_bank,
     };
     let transaction_bank = serde_json::to_string(&transaction_bank).unwrap();
     let mut sender_transactions: Vec<String> = sender

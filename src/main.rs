@@ -6,11 +6,7 @@ use salvo::cors::{self, Cors};
 use salvo::http::Method;
 use salvo::prelude::*;
 use surrealdb::engine::remote::ws::Wss;
-use surrealdb::{
-    engine::remote::ws::Client,
-    opt::auth::Root,
-    Surreal,
-};
+use surrealdb::{engine::remote::ws::Client, opt::auth::Root, Surreal};
 const DBURL: &str = "banking.saswdorf.de:8000";
 const DBUSER: &str = "guffe";
 const DBPASS: &str = "IE76qzUk0t78JGhTz";
@@ -18,13 +14,13 @@ const TOKEN: &str = "Bearer W_97xyk8G]]w";
 const TAX_FACTOR: &str = "10";
 static DB: once_cell::sync::Lazy<Surreal<Client>> = once_cell::sync::Lazy::new(Surreal::init);
 mod balance_check;
+mod errors;
 mod get_logs;
 mod lock_user;
 mod logger;
 mod pay;
 mod router;
 mod user;
-mod errors;
 mod verify_account;
 #[handler]
 async fn hello() -> &'static str {

@@ -1,9 +1,6 @@
 #![allow(dead_code)]
 
-
 use std::fmt;
-
-
 
 #[derive(Debug)]
 pub enum BackendError {
@@ -17,13 +14,11 @@ impl fmt::Display for BackendError {
     }
 }
 
-
 impl From<surrealdb::Error> for BackendError {
     fn from(e: surrealdb::Error) -> Self {
         BackendError::DataBaseError(e)
     }
 }
-
 
 #[derive(Debug)]
 pub enum PaymentError {
