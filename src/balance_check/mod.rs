@@ -28,7 +28,15 @@ pub async fn balance_check(req: &mut Request, res: &mut Response) {
     match user {
         Ok(user) => match user {
             Some(user) => {
-                if !verify_pin(&user.pin, &payload.pin) {
+                let verified = match verify_pin(&user.pin, &payload.pin) {
+                    Ok(verified) => verified,
+                    Err(e) => {
+                        res.status_code(StatusCode::CREATED);
+                        logger::log(logger::Actions::BalanceCheck { user: payload.acc1 }, false).await;
+                        return res.render(e.to_string());
+                    }
+                };
+                if !verified {
                     res.status_code(StatusCode::CREATED);
                     logger::log(logger::Actions::BalanceCheck { user: payload.acc1 }, false).await;
                     lock_user::increment_failed_attempts(req.remote_addr().to_owned()).await;

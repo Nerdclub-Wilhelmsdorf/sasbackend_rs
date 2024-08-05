@@ -92,7 +92,10 @@ pub enum TransferType {
     Subtract,
 }
 
-pub fn verify_pin(database_pin: &str, input_pin: &str) -> bool {
-    bcrypt::verify(input_pin, database_pin).unwrap()
-    //TODO
+pub fn verify_pin(database_pin: &str, input_pin: &str) -> Result<bool, BackendError> {
+    let verified = bcrypt::verify(input_pin, database_pin);
+    match verified {
+        Ok(verified) => Ok(verified),
+        Err(e) => Err(BackendError::BcryptError(e)),
+    }
 }

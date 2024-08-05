@@ -2,10 +2,13 @@
 
 use std::fmt;
 
+use bcrypt::BcryptError;
+
 #[derive(Debug)]
 pub enum BackendError {
     DataBaseError(surrealdb::Error),
     PaymentError(PaymentError),
+    BcryptError(BcryptError)
 }
 
 impl fmt::Display for BackendError {
@@ -14,11 +17,7 @@ impl fmt::Display for BackendError {
     }
 }
 
-impl From<surrealdb::Error> for BackendError {
-    fn from(e: surrealdb::Error) -> Self {
-        BackendError::DataBaseError(e)
-    }
-}
+
 
 #[derive(Debug)]
 pub enum PaymentError {
@@ -41,5 +40,13 @@ impl std::fmt::Display for PaymentError {
             }
             PaymentError::SameUser => write!(f, "Sender and receiver are the same"),
         }
+    }
+}
+
+
+
+impl From<surrealdb::Error> for BackendError {
+    fn from(e: surrealdb::Error) -> Self {
+        BackendError::DataBaseError(e)
     }
 }

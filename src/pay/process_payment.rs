@@ -74,7 +74,8 @@ pub async fn process_payment(
     if sender.id.id == receiver.id.id {
         return Err(BackendError::PaymentError(PaymentError::SameUser));
     }
-    if !verify_pin(&sender.pin, &payload.pin) {
+    let verified = verify_pin(&sender.pin, &payload.pin)?;
+    if !verified {
         increment_failed_attempts(request.remote_addr().to_owned()).await;
         return Err(BackendError::PaymentError(PaymentError::IncorrectPin));
     }
