@@ -32,9 +32,9 @@ pub async fn increment_failed_attempts(ip: SocketAddr) {
                     users.users.retain(|u| !matches!(&u.ip, ip));
                 });
             }
+            found = true;
+            break;
         }
-        found = true;
-        break;
     }
     if !found {
         users.users.push(User {
