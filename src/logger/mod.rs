@@ -1,3 +1,4 @@
+use chrono::{FixedOffset, Utc};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
 
 pub enum Actions {
@@ -117,7 +118,9 @@ pub async fn log(action: Actions, was_successful: bool) {
     }
 }
 pub fn curr_time() -> String {
-    let now = chrono::Local::now();
-    let date = now.format("%m-%d-%Y %H:%M:%S");
+    let now = Utc::now();
+    let offset = FixedOffset::east_opt(1 * 3600).unwrap(); // UTC+1
+    let local_time = now.with_timezone(&offset);
+    let date = local_time.format("%m-%d-%Y %H:%M:%S");
     date.to_string()
 }
