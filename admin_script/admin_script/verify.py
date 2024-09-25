@@ -5,7 +5,7 @@ from admin_script import main
 async def verify_user():
     id = input("Enter Account ID: ")
     name = input("Enter Student Number: ")
-    async with Surreal("ws://localhost:8000/rpc") as db:
+    async with Surreal("wss://banking.saswdorf.de:8000/rpc") as db:
         await db.signin({"user": main.DBUSER, "pass": main.DBPSSWD})
         await db.use("user", "user")
         user = await db.select("user:" + id)

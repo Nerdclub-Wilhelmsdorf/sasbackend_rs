@@ -67,7 +67,7 @@ def matchpswd(password, hashed):
 
 async def update_field(id, field, value):
     from surrealdb import Surreal
-    async with Surreal("ws://localhost:8000/rpc") as db:
+    async with Surreal("wss://banking.saswdorf.de:8000/rpc") as db:
         await db.signin({"user": DBUSER, "pass": DBPSSWD})
         await db.use("user", "user")
         res = await db.query(f"UPDATE {id} SET {field} = '{value}'",{})

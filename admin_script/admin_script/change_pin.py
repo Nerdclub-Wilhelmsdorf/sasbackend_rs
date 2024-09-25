@@ -7,7 +7,7 @@ async def change_pin():
     id = input("Enter Account ID: ")
     name = input("Enter Student Number: ")
     pin = input("Enter New Pin: ")
-    async with Surreal("ws://localhost:8000/rpc") as db:
+    async with Surreal("wss://banking.saswdorf.de:8000/rpc") as db:
         await db.signin({"user": main.DBUSER, "pass": main.DBPSSWD})
         await db.use("user", "user")
         user = await db.select(f'user:{id}')

@@ -10,7 +10,7 @@ async def create_user():
     pin = input("Enter Pin (Random): ")
     if pin == "":
         pin = random4int()
-    async with Surreal("ws://localhost:8000/rpc") as db:
+    async with Surreal("wss://banking.saswdorf.de:8000/rpc") as db:
         await db.signin({"user": main.DBUSER, "pass": main.DBPSSWD})
         await db.use("user", "user") 
         if id == "":
