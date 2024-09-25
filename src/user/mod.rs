@@ -5,6 +5,7 @@ use rust_decimal_macros::dec;
 use serde::Deserialize;
 use surrealdb::opt::PatchOp;
 use surrealdb::sql::Thing;
+use surrealdb::RecordId;
 #[derive(Deserialize)]
 pub struct AccountID {
     pub id: Thing,
@@ -44,7 +45,7 @@ impl DBUser {
     ) -> Result<Option<DBUser>, BackendError> {
         let id = self.id.id.clone(); // Clone the id value
         let updated_user: Option<DBUser> = DB
-            .update(("user", id.to_string())) // Use the cloned id value
+            .update(("user", RecordId::from_table_key(id.tb, id.id.to_string()).key().to_owned())) // Use the cloned id value
             .patch(PatchOp::replace(&format!("/{}", key), value))
             .await?;
 
@@ -56,7 +57,7 @@ impl DBUser {
         transfer_type: TransferType,
     ) -> Result<Option<DBUser>, BackendError> {
         let id = self.id.id.clone(); // Clone the id value
-        let current_user_state: Option<DBUser> = DB.select(("user", id.to_string().clone())).await?;
+        let current_user_state: Option<DBUser> = DB.select(("user", RecordId::from_table_key(id.tb.clone(), id.id.to_string()).key().to_owned())).await?;
         let current_user_state = match current_user_state {
             Some(current_user_state) => current_user_state,
             None => return Ok(None),
@@ -80,7 +81,7 @@ impl DBUser {
         }
         let new_balance = new_balance.to_string();
         let updated_user: Option<DBUser> = DB
-            .update(("user", id.to_string()))
+            .update(("user", RecordId::from_table_key(id.tb, id.id.to_string()).key().to_owned()))
             .patch(PatchOp::replace(&format!("/{}", "balance"), new_balance))
             .await?;
         Ok(updated_user)
