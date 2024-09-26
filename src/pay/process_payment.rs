@@ -51,7 +51,9 @@ pub async fn process_payment(
 ) -> Result<String, BackendError> {
     let sender = DBUser::fetch_user(&payload.from).await?;
     let receiver = DBUser::fetch_user(&payload.to).await?;
-    let bank = DBUser::fetch_user(&"zentralbank".to_string()).await?;
+
+    let bank: Option<DBUser> = DBUser::fetch_user(&"zentralbank".to_string()).await?;
+
     if sender.is_none() {
         return Err(BackendError::PaymentError(PaymentError::UserNotFound(
             payload.from.clone(),
@@ -71,7 +73,7 @@ pub async fn process_payment(
     let sender = sender.unwrap();
     let receiver = receiver.unwrap();
     let bank = bank.unwrap();
-    if sender.id.id == receiver.id.id {
+    if sender.id == receiver.id {
         return Err(BackendError::PaymentError(PaymentError::SameUser));
     }
     let verified = verify_pin(&sender.pin, &payload.pin)?;

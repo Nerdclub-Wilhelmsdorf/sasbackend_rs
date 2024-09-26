@@ -32,22 +32,22 @@ pub async fn log_transaction(
 
     let transaction_reciever = TransactionLog {
         time: &time,
-        from: &sender.id.id.to_string(),
-        to: &receiver.id.id.to_string(),
+        from: &sender.id.key().to_string(),
+        to: &receiver.id.key().to_string(),
         amount: &tax_amount,
     };
     let transaction_reciever = serde_json::to_string(&transaction_reciever).unwrap();
     let transaction_sender = TransactionLog {
         time: &time,
-        from: &sender.id.id.to_string(),
-        to: &receiver.id.id.to_string(),
+        from: &sender.id.key().to_string(),
+        to: &receiver.id.key().to_string(),
         amount: &amount,
     };
     let transaction_sender = serde_json::to_string(&transaction_sender).unwrap();
     let transaction_bank = TransactionLog {
         time: &time,
-        from: &sender.id.id.to_string(),
-        to: &receiver.id.id.to_string(),
+        from: &sender.id.key().to_string(),
+        to: &receiver.id.key().to_string(),
         amount: &tax_amount_bank,
     };
     let transaction_bank = serde_json::to_string(&transaction_bank).unwrap();
