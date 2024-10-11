@@ -3,6 +3,8 @@ from admin_script import main
 
 async def create_user():
     id = input("Enter Account ID (Random): ")
+    if id == "":
+        id = random_string(12)
     name = input("Enter Student Number: ")
     balance = input("Enter Balance (0): ")
     if balance == "":
@@ -48,6 +50,11 @@ def random4int():
     range_end = (10**n) - 1
     return secrets.randbelow(range_end - range_start + 1) + range_start
 
+
+def random_string(length):
+    import random
+    import string
+    return ''.join(random.choices(string.ascii_uppercase + string.digits + string.ascii_lowercase, k=length))
 
 
 
