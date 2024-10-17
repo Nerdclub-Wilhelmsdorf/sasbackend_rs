@@ -1,6 +1,5 @@
 from surrealdb import Surreal
 from admin_script import main
-
 async def create_user():
     id = input("Enter Account ID (Random): ")
     if id == "":
@@ -18,6 +17,15 @@ async def create_user():
         is_guest = True
     else:
         is_guest = False
+    await new_user(id, name, balance, pin, is_guest)
+
+async def new_user(id, name, balance, pin, is_guest):
+    print("Creating user...")
+    print("ID: " + id)
+    print("Name: " + name)
+    print("Balance: " + str(balance))
+    print("Pin: " + str(pin))
+    print("Guest: " + str(is_guest))
     async with Surreal("wss://banking.saswdorf.de:8000/rpc") as db:
         await db.signin({"user": main.DBUSER, "pass": main.DBPSSWD})
         await db.use("user", "user") 
@@ -42,6 +50,7 @@ async def create_user():
                     "pin": main.hashb(pin),
                     "name": main.hashb(name),
                     "transactions": "",
+                    "guest" : is_guest
                 },
             )
             id = "user:" + id
@@ -62,6 +71,3 @@ def random_string(length):
     import random
     import string
     return ''.join(random.choices(string.ascii_uppercase + string.digits + string.ascii_lowercase, k=length))
-
-
-

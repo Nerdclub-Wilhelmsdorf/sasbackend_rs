@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from admin_script import change_pin, create_user, delete_user, get_logs, list_users, transfer, verify
+from admin_script import change_pin, create_user, delete_user, get_logs, list_users, mass_generate, transfer, verify
 
 DBPSSWD = "IE76qzUk0t78JGhTz"
 DBUSER = "guffe"
@@ -15,6 +15,7 @@ async def main():
     print("[5] verify - verify an account")
     print("[6] getlogs - get the logs of an account as CSV")
     print("[7] transaction - induce a transaction")
+    print("[8] mass-generate users.")
     print("[0] exit - exit the program")
     print("Please enter the number of the command you would like to run:")
     scanner = input()
@@ -36,6 +37,8 @@ async def matchInput(scanner):
             await get_logs.get_logs()
         case "7":
             await transfer.transfer()
+        case "8":
+            await mass_generate.mass_generate()
         case "0":
             print("exit")
         case _:
