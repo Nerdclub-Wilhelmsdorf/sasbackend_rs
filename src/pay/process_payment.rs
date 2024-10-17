@@ -73,6 +73,9 @@ pub async fn process_payment(
     let sender = sender.unwrap();
     let receiver = receiver.unwrap();
     let bank = bank.unwrap();
+    if receiver.guest {
+        return Err(BackendError::PaymentError(PaymentError::ReceiverIsGuest));
+    }
     if sender.id == receiver.id {
         return Err(BackendError::PaymentError(PaymentError::SameUser));
     }

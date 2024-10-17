@@ -25,6 +25,7 @@ pub enum PaymentError {
     UserNotFound(String),
     IncorrectPin,
     InsufficientFunds,
+    RecieverIsGuest,
     FailedMoneyTransfer,
     SameUser,
 }
@@ -38,6 +39,7 @@ impl std::fmt::Display for PaymentError {
             PaymentError::FailedMoneyTransfer => {
                 write!(f, "Failed to add/remove money from account")
             }
+            PaymentError::RecieverIsGuest => write!(f, "Reciever is a guest account"),
             PaymentError::SameUser => write!(f, "Sender and receiver are the same"),
         }
     }

@@ -14,6 +14,7 @@ pub struct DBUser {
     pub balance: String,
     pub pin: String,
     pub transactions: String,
+    pub guest: bool,
 }
 
 impl DBUser {

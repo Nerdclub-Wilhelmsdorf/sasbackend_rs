@@ -12,6 +12,12 @@ async def create_user():
     pin = input("Enter Pin (Random): ")
     if pin == "":
         pin = random4int()
+    guest = input("Is this a guest account? (y/n): ")
+    is_guest = False
+    if guest == "y":
+        is_guest = True
+    else:
+        is_guest = False
     async with Surreal("wss://banking.saswdorf.de:8000/rpc") as db:
         await db.signin({"user": main.DBUSER, "pass": main.DBPSSWD})
         await db.use("user", "user") 
@@ -23,6 +29,7 @@ async def create_user():
                     "pin": main.hashb(pin),
                     "name": main.hashb(name),
                     "transactions": "",
+                    "guest" : is_guest
                 },
             )
            id = created_record[0]["id"]
