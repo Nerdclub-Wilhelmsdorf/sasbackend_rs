@@ -28,6 +28,7 @@ pub enum PaymentError {
     RecieverIsGuest,
     FailedMoneyTransfer,
     SameUser,
+    ReceiverIsGuest
 }
 
 impl std::fmt::Display for PaymentError {
@@ -41,6 +42,7 @@ impl std::fmt::Display for PaymentError {
             }
             PaymentError::RecieverIsGuest => write!(f, "Reciever is a guest account"),
             PaymentError::SameUser => write!(f, "Sender and receiver are the same"),
+            PaymentError::ReceiverIsGuest => write!(f, "Receiver is a guest account"),
         }
     }
 }
