@@ -62,7 +62,7 @@ def hashb(password):
 
 def matchpswd(password, hashed):
     import bcrypt
-    password = str(passworokd)
+    password = str(password)
     hashed = str(hashed)
     lobytes = password.encode('utf-8')
     hashed = hashed.encode('utf-8')
