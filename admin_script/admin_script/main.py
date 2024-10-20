@@ -56,13 +56,13 @@ def hashb(password):
     import bcrypt
     password = str(password)
     bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
+    salt = bcrypt.gensalt(rounds=10)
     hash = bcrypt.hashpw(bytes, salt)
     return hash.decode('utf-8')
 
 def matchpswd(password, hashed):
     import bcrypt
-    password = str(password)
+    password = str(passworokd)
     hashed = str(hashed)
     lobytes = password.encode('utf-8')
     hashed = hashed.encode('utf-8')
