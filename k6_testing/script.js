@@ -35,8 +35,7 @@ export default function () {
 }
 
 function transaction() {
-  var user1,
-    user2 = getTwoRandomUsers();
+  var [user1, user2] = getTwoRandomUsers();
   const payload = JSON.stringify({
     from: user1.id,
     to: user2.id,
@@ -52,8 +51,7 @@ function transaction() {
 }
 
 function failed_transaction() {
-  var user1,
-    user2 = getTwoRandomUsers();
+  var [user1, user2] = getTwoRandomUsers();
   const payload = JSON.stringify({
     from: user1.id,
     to: user2.id,
