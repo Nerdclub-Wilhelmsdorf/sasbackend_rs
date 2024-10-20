@@ -48,6 +48,7 @@ function transaction() {
     },
   };
   var ans = http.post(URL + "/pay", payload, params);
+  console.log(ans.body);
 }
 
 function failed_transaction() {
@@ -66,7 +67,8 @@ function failed_transaction() {
   http.post(URL + "/pay", payload, params);
   http.post(URL + "/pay", payload, params);
   http.post(URL + "/pay", payload, params);
-  http.post(URL + "/pay", payload, params);
+  ans = http.post(URL + "/pay", payload, params);
+  console.log(ans.body);
 }
 
 function get_log() {
@@ -93,7 +95,8 @@ function getBalance() {
       Authorization: TOKEN,
     },
   };
-  http.post(URL + "/balanceCheck", payload, params);
+  ans = http.post(URL + "/balanceCheck", payload, params);
+  console.log(ans.body);
 }
 
 function getRandomUser() {
