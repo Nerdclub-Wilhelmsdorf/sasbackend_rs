@@ -1,0 +1,22 @@
+meta {
+  name: Pay
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://banking.saswdorf.de/pay
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer W_97xyk8G]]w
+}
+
+body:json {
+  {
+    "from" : "1",
+    "to": "2"
+  }
+}

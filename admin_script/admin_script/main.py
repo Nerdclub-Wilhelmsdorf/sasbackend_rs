@@ -53,11 +53,11 @@ def start():
 
 
 def hashb(password):
-    import bcrypt 
+    import bcrypt
     password = str(password)
-    bytes = password.encode('utf-8') 
-    salt = bcrypt.gensalt() 
-    hash = bcrypt.hashpw(bytes, salt) 
+    bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hash = bcrypt.hashpw(bytes, salt)
     return hash.decode('utf-8')
 
 def matchpswd(password, hashed):
