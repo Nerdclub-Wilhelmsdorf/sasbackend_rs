@@ -55,7 +55,7 @@ function failed_transaction() {
   const payload = JSON.stringify({
     from: user1.id,
     to: user2.id,
-    amount: 1,
+    amount: "1",
     pin: "0000",
   });
   const params = {
@@ -80,7 +80,7 @@ function get_log() {
       Authorization: TOKEN,
     },
   };
-  http.get(URL + "/getLogs", payload, params);
+  http.post(URL + "/getLogs", payload, params);
 }
 function getBalance() {
   var user = getRandomUser();
@@ -93,7 +93,7 @@ function getBalance() {
       Authorization: TOKEN,
     },
   };
-  http.get(URL + "/balanceCheck", payload, params);
+  http.post(URL + "/balanceCheck", payload, params);
 }
 
 function getRandomUser() {
