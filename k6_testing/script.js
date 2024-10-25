@@ -16,8 +16,7 @@ export const options = {
 };
 
 export default function () {
-  //random Number from 1 to 12
-  //var randomNum = Math.floor(Math.random() * 12) + 1;
+  var randomNum = Math.floor(Math.random() * 12) + 1;
   var randomNum = 1;
   if (randomNum < 4) {
     transaction();
