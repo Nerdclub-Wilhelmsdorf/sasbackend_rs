@@ -13,7 +13,12 @@ pub enum BackendError {
 
 impl fmt::Display for BackendError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Backend error: {:?}", self)
+        let content = match self {
+            BackendError::DataBaseError(e) => format!("Backend error: {:?}", e.to_string()),
+            BackendError::PaymentError(e) => format!("Backend error: {:?}", e.to_string()),
+            BackendError::BcryptError(e) => format!("Backend error: {:?}", e.to_string()),
+        };
+        write!(f, "{}", content)
     }
 }
 
